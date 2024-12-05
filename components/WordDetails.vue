@@ -1,5 +1,5 @@
 <template>
-   <div class="fixed inset-0 bg-black/50 flex items-end justify-center z-50">
+   <div class="fixed inset-0 bg-black/50 flex items-end justify-center z-50"  @click="$emit('close')">
      <div class="w-full max-w-3xl bg-white rounded-t-xl max-h-[80vh] overflow-y-auto">
        <div class="p-6">
         <div class="flex justify-between items-center mb-6">
@@ -16,25 +16,31 @@
         <div v-else-if="wordData">
           <nav class="flex border-b mb-6">
             <button 
-              v-for="tab in tabs" 
-              :key="tab.id"
-              @click="activeTab = tab.id"
-              class="px-4 py-2 -mb-px font-medium transition-colors flex items-center gap-2"
-              :class="[
+                v-for="tab in availableTabs" 
+                :key="tab.id"
+                @click="activeTab = tab.id"
+                class="px-4 py-2 -mb-px font-medium transition-colors flex items-center gap-2"
+                :class="[
                 activeTab === tab.id 
-                  ? 'border-b-2 border-blue-500 text-blue-500' 
-                  : 'text-gray-500 hover:text-gray-700'
-              ]"
+                    ? 'border-b-2 border-blue-500 text-blue-500' 
+                    : 'text-gray-500 hover:text-gray-700'
+                ]"
             >
-              <component :is="tab.icon" class="w-4 h-4" />
-              {{ tab.label }}
+                <component :is="tab.icon" class="w-4 h-4" />
+                {{ tab.label }}
             </button>
-          </nav>
+        </nav>
 
           <div class="prose max-w-none">
-            <div v-if="activeTab === 'definitions'" v-html="wordData.definitions" />
-            <div v-if="activeTab === 'conjugation'" v-html="wordData.conjugation" />
-            <div v-if="activeTab === 'examples'" v-html="wordData.examples" />
+            <div v-if="activeTab === 'definitions'" >
+              <Translation :translation-data="wordData?.definitions" />
+            </div>
+            <div v-if="activeTab === 'conjugation'">
+              <Conjugation :conjugation-data="wordData?.conjugation" />
+            </div>
+            <div v-if="activeTab === 'examples'" >
+              <Examples :examples="wordData?.examples" />
+            </div>
           </div>
         </div>
 
@@ -79,4 +85,16 @@ onMounted(async () => {
     loading.value = false
   }
 })
+
+const allTabs = [
+ { id: 'definitions', label: 'Definition', icon: Book },
+ { id: 'conjugation', label: 'Conjugation', icon: ListChecks, requiresConjugation: true },
+ { id: 'examples', label: 'Examples', icon: BookOpen }
+]
+
+const availableTabs = computed(() => 
+ allTabs.filter(tab => 
+   !tab.requiresConjugation || wordData.value?.definitions?.dictionary?.content?.flections?.conjugation
+ )
+)
 </script>
