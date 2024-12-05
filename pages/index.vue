@@ -6,7 +6,19 @@ import { useDictionaryStore } from './stores/dictionary'
 const store = useDictionaryStore()
 const fontSize = ref(18)
 const selectedWord = ref(null)
-const sampleText = `Für nicht wenige Menschen beginnen jetzt wieder einige der schönsten Wochen im Jahr: der Advent und dann natürlich das Fest. Wir widmen dem Phänomen ein ganzes Heft.`
+const sampleText = `
+Ein junger Astronom saß spät in der kalten Nacht am Teleskop. Max Schmidt war müde, aber seine Augen blieben wach. Er suchte nach etwas Besonderem im dunklen Himmel.
+
+Plötzlich sah er ein schwaches Licht. Das war anders als die normalen hellen Sterne. Er machte schnell Aufnahmen und rief seine alte Professorin an. Sie kam sofort zum Observatorium.
+
+Die kluge Wissenschaftlerin wurde sehr aufgeregt. Sie hatten ein neues schwarzes Loch gefunden! Es war klein aber stark und zog nahegelegene Sterne an. Die Entdeckung war wichtig für die moderne Physik.
+
+Das interessante Phänomen war einzigartig. Das schwarze Loch bewegte sich schneller als andere. Seine hohe Geschwindigkeit war erstaunlich und gefährlich für sein Sternsystem.
+
+Internationale Forscher wurden aufmerksam. Sie schickten große Teleskope in den tiefen Weltraum. Die wertvollen Daten zeigten etwas Unmögliches - das schwarze Loch schien zu verschwinden und wieder zu erscheinen.
+
+Diese seltsame Entdeckung veränderte unser Verständnis der Schwerkraft. Max wurde berühmt in der wissenschaftlichen Welt. Seine fleißige Arbeit öffnete neue Türen für die weitere Forschung des Universums.
+`
 
 const words = computed(() => 
   sampleText.split(' ').map(word => ({
@@ -15,8 +27,24 @@ const words = computed(() =>
   }))
 )
 
-const displayWord = async (word) => {
+const lastClickedIndex = ref(null)
+
+const displayWord = async (word, index) => {
   selectedWord.value = word
+  lastClickedIndex.value = index
+}
+
+const close = () => {
+    selectedWord.value = null
+    const element = document.getElementById(`word-${lastClickedIndex.value}`)
+    if (element) {
+        element.classList.add('blink-animation')
+        setTimeout(() => element.classList.remove('blink-animation'), 2000)
+    }
+}
+
+const isInDictionary = (word) => {
+  return ['widmen', 'Adventskalender'].includes(word)
 }
 </script>
 
@@ -38,12 +66,14 @@ const displayWord = async (word) => {
       <!-- Content -->
       <main class="p-6">
         <article :style="{ fontSize: fontSize + 'px' }" class="leading-relaxed">
-          <span 
+            <span 
             v-for="(word, index) in words"
             :key="index"
+            :id="`word-${index}`"
             class="cursor-pointer inline-block mr-1 hover:bg-gray-100"
-            @click="displayWord(word.clean)"
-          >
+            :class="{'bg-blue-100': isInDictionary(word.clean)}" 
+            @click="displayWord(word.clean, index)"
+            >
             {{ word.original }}
           </span>
         </article>
@@ -55,7 +85,7 @@ const displayWord = async (word) => {
           <div class="w-full bg-white rounded-t-xl max-h-[80vh] overflow-y-auto">
             <WordDetails 
               :word="selectedWord" 
-              @close="selectedWord = null"
+             @close="close"
             />
           </div>
         </div>
@@ -63,3 +93,13 @@ const displayWord = async (word) => {
     </div>
   </div>
 </template>
+
+<style>
+@keyframes blink {
+  0%, 100% { background-color: transparent; }
+  25%, 75% { background-color: rgb(219 234 254); }
+}
+.blink-animation {
+  animation: blink 1s ease-in-out 2;
+}
+</style>

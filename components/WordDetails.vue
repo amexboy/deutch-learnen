@@ -1,6 +1,6 @@
 <template>
-   <div class="fixed inset-0 bg-black/50 flex items-end justify-center z-50"  @click="$emit('close')">
-     <div class="w-full max-w-3xl bg-white rounded-t-xl max-h-[80vh] overflow-y-auto">
+   <div class="fixed inset-0 bg-black/50 flex items-end justify-center z-50" @click="handleOutsideClick">
+     <div class="w-full max-w-3xl bg-white rounded-t-xl max-h-[80vh] overflow-y-auto" ref="modalContent">
        <div class="p-6">
         <div class="flex justify-between items-center mb-6">
           <h2 class="text-2xl font-bold font-sans">{{ word }}</h2>
@@ -13,7 +13,7 @@
           <div class="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto"></div>
         </div>
 
-        <div v-else-if="wordData">
+        <div v-else-if="wordData" >
           <nav class="flex border-b mb-6">
             <button 
                 v-for="tab in availableTabs" 
@@ -97,4 +97,13 @@ const availableTabs = computed(() =>
    !tab.requiresConjugation || wordData.value?.definitions?.dictionary?.content?.flections?.conjugation
  )
 )
+
+
+const modalContent = ref(null)
+
+function handleOutsideClick(e) {
+ if (!modalContent.value?.contains(e.target)) {
+   emit('close')
+ }
+}
 </script>
