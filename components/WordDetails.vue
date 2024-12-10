@@ -3,7 +3,15 @@
      <div class="w-full max-w-3xl bg-white rounded-t-xl max-h-[80vh] overflow-y-auto" ref="modalContent">
        <div class="p-6">
         <div class="flex justify-between items-center mb-6">
+          <div class="mb-6">
           <h2 class="text-2xl font-bold font-sans">{{ word }}</h2>
+                <div class="text-lg text-gray-600 mb-4">{{ wordData?.definitions?.syllables }}</div>
+                
+                <!-- Usage frequency -->
+                <div class="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                  {{ wordData?.definitions?.usage_frequency.toLowerCase() }}
+                </div>
+              </div>
           <button @click="$emit('close')" class="hover:bg-gray-100 p-2 rounded-full">
             <X :size="24" />
           </button>
@@ -33,13 +41,37 @@
 
           <div class="prose max-w-none">
             <div v-if="activeTab === 'definitions'" >
-              <Translation :translation-data="wordData?.definitions" />
+              <div class="space-y-6">
+                <div v-for="(def, index) in wordData?.definitions?.definitions" :key="index" class="pb-4">
+                  <!-- Main meaning -->
+                  <div class="text-gray-800 font-medium mb-2">{{ def.meaning }}</div>
+                  
+                  <!-- Example -->
+                  <div class="pl-4 border-l-2 border-gray-200 mb-2 text-gray-600 italic">
+                    {{ def.example }}
+                  </div>
+                  
+                  <!-- Context -->
+                  <div class="text-sm text-gray-500">
+                    {{ def.context }}
+                  </div>
+                </div>
+              </div>
             </div>
             <div v-if="activeTab === 'conjugation'">
               <Conjugation :conjugation-data="wordData?.conjugation" />
             </div>
-            <div v-if="activeTab === 'examples'" >
-              <Examples :examples="wordData?.examples" />
+            <div v-if="activeTab === 'mnemonics'" >
+               <div v-if="wordData?.definitions?.mnemonics?.length" class="mt-8">
+                <h3 class="font-medium mb-3">Memory Aids</h3>
+                <ul class="list-disc pl-5 space-y-2">
+                  <li v-for="(mnemonic, index) in wordData?.definitions?.mnemonics" 
+                      :key="index" 
+                      class="text-gray-600">
+                    {{ mnemonic }}
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
@@ -68,15 +100,14 @@ const wordData = ref(null)
 const tabs = [
   { id: 'definitions', label: 'Definition', icon: Book },
   { id: 'conjugation', label: 'Conjugation', icon: ListChecks },
-  { id: 'examples', label: 'Examples', icon: BookOpen }
+  { id: 'mnemonics', label: 'Mnemonics', icon: BookOpen }
 ]
 
 onMounted(async () => {
   try {
-    const [definitions, conjugation, examples] = await Promise.all([
+    const [definitions, conjugation] = await Promise.all([
       store.getWord(props.word),
-      store.getConjugation(props.word),
-      store.getExamples(props.word)
+      store.getConjugation(props.word)
     ])
     wordData.value = { definitions, conjugation, examples }
   } catch (error) {
@@ -89,7 +120,7 @@ onMounted(async () => {
 const allTabs = [
  { id: 'definitions', label: 'Definition', icon: Book },
  { id: 'conjugation', label: 'Conjugation', icon: ListChecks, requiresConjugation: true },
- { id: 'examples', label: 'Examples', icon: BookOpen }
+ { id: 'mnemonics', label: 'Mnemonics', icon: BookOpen }
 ]
 
 const availableTabs = computed(() => 

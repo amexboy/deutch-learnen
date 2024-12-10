@@ -61,8 +61,3 @@ const filteredSections = computed(() =>
 )
 </script>
 
-<style scoped>
-:deep(.flected_form) {
- @apply text-blue-600;
-}
-</style>
